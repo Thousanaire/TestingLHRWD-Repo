@@ -1,0 +1,645 @@
+/* Global styles */
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0;
+  background: radial-gradient(circle at top, #151515 0%, #000 55%, #050509 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header */
+header {
+  background: linear-gradient(135deg, #05040b, #111216);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+header h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 2vw, 1.8rem);
+  letter-spacing: 0.03em;
+}
+
+/* ============================================================
+   JOIN GAME UI 
+   ============================================================ */
+#joinGame {
+  background: rgba(20, 20, 24, 0.95);
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  border: 1px solid rgba(255,64,129,0.4);
+}
+
+#nameInput,
+#avatarSelect,
+#colorSelect {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #333;
+  font-size: 0.85rem;
+  background: #141419;
+  color: #fff;
+}
+
+#joinBtn {
+  background: linear-gradient(135deg, #ff4081, #7c4dff);
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  border-radius: 999px;
+  font-weight: bold;
+  transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
+  font-size: 0.9rem;
+}
+
+#joinBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255,64,129,0.6);
+}
+
+/* ============================================================
+   MAIN LAYOUT & GAME BOARD (EXACTLY LIKE OLD VERSION)
+   ============================================================ */
+main {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  box-sizing: border-box;
+  gap: 1rem;
+}
+
+/* Global card-style for sections */
+section {
+  background: rgba(20, 20, 20, 0.9);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Game Board */
+#game {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+/* Remove extra card styling on these containers so inner cards stand out */
+#game,
+#rightColumn {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+#game h2 {
+  align-self: flex-start;
+  margin: 0 0 0.75rem 0;
+}
+
+/* Game table */
+#table {
+  display: grid;
+  grid-template-areas:
+    ". top ."
+    "left center right"
+    ". bottom .";
+  grid-template-columns: minmax(80px, 120px) 1fr minmax(80px, 120px);
+  grid-template-rows: minmax(80px, 120px) minmax(220px, 1fr) minmax(80px, 120px);
+  align-items: center;
+  justify-items: center;
+  gap: 20px;
+
+  background: radial-gradient(circle at center, #161616 0%, #050505 85%);
+  border-radius: 24px;
+  padding: clamp(16px, 3vw, 32px);
+
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+}
+
+/* Player positions */
+.player.top { grid-area: top; }
+.player.bottom { grid-area: bottom; }
+.player.left { grid-area: left; }
+.player.right { grid-area: right; }
+
+.player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+.player.active {
+  border-radius: 12px;
+  transform: scale(1.05);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.6);
+}
+
+.player.eliminated {
+  opacity: 0.4;
+}
+
+.player.eliminated .avatar {
+  filter: grayscale(100%);
+}
+
+.player.eliminated .name,
+.player.eliminated .chips {
+  color: #888;
+}
+
+/* Avatars */
+.avatar {
+  width: clamp(56px, 7vw, 80px);
+  height: clamp(56px, 7vw, 80px);
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 5px;
+  border: 3px solid transparent;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+}
+
+.name {
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.chips {
+  font-size: 14px;
+  color: #ff4081;
+}
+
+/* Center area with dice + pot */
+#centerArea {
+  grid-area: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Soft spotlight behind dice */
+#centerArea::before {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(255,64,129,0.15), transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+#diceArea {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.die {
+  width: clamp(56px, 6vw, 80px);
+  height: clamp(56px, 6vw, 80px);
+  transition: transform 0.6s ease;
+}
+
+/* Dice roll animation */
+.die.roll {
+  animation: spin 0.6s linear;
+}
+
+@keyframes spin {
+  0%   { transform: rotateX(0) rotateY(0); }
+  25%  { transform: rotateX(180deg) rotateY(90deg); }
+  50%  { transform: rotateX(360deg) rotateY(180deg); }
+  75%  { transform: rotateX(540deg) rotateY(270deg); }
+  100% { transform: rotateX(720deg) rotateY(360deg); }
+}
+
+#centerPot {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  background: #222;
+  padding: 6px 12px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(255,64,129,0.6);
+}
+
+/* Controls under board */
+.controls {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+#rollBtn,
+#resetBtn {
+  background: linear-gradient(135deg, #ff4081, #7c4dff);
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  border-radius: 999px;
+  font-weight: bold;
+  transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
+  font-size: 0.9rem;
+}
+
+#rollBtn:hover,
+#resetBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(255,64,129,0.6);
+}
+
+#rollBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Current turn text */
+#currentTurn {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+/* ============================================================
+   RIGHT COLUMN (UNCHANGED)
+   ============================================================ */
+#rightColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Wild Steal Panel */
+#wildPanel {
+  background: #1e1e1e;
+  color: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  box-sizing: border-box;
+  min-height: 80px;
+  font-size: 12px;
+}
+
+#wildPanel h2,
+#history h2,
+#chat h2 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.4rem;
+  color: #f5f5f5;
+}
+
+#wildContent button {
+  margin: 4px;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff4081, #7c4dff);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+  transition: 0.2s ease;
+}
+
+#wildContent button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255,64,129,0.7);
+}
+
+/* Roll History Panel */
+#history {
+  background: #1e1e1e;
+  color: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  font-size: 12px;
+}
+
+#rollHistory {
+  background: #15151a;
+  color: #eee;
+  border-radius: 12px;
+  padding: 0.8rem;
+  overflow-y: auto;
+  height: 180px;
+  max-height: 180px;
+  margin-top: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+}
+
+.history-entry {
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  background: #333;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #ddd;
+  box-shadow: 0 0 4px rgba(255,64,129,0.3);
+}
+
+/* Chat Box */
+#chat {
+  width: 100%;
+  margin-top: 0.25rem;
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  box-sizing: border-box;
+  height: 180px;
+  max-height: 180px;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+
+#chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  background: #15151a;
+  color: #eee;
+  border-radius: 12px;
+  padding: 0.8rem;
+  margin-bottom: 0.5rem;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chat-input {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#chatInput {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #141419;
+  color: #fff;
+  margin-right: 0.5rem;
+  font-size: 12px;
+}
+
+#sendBtn {
+  background: linear-gradient(135deg, #ff4081, #7c4dff);
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 12px;
+  border: none;
+}
+
+/* ============================================================
+   INTRO OVERLAY — NEW MULTIPLAYER VERSION
+   ============================================================ */
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  transition: opacity 0.3s ease, pointer-events 0s;
+}
+
+.intro-panel {
+  position: relative;
+  width: 100%;
+  max-width: 650px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Host image */
+.intro-avatar {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+}
+
+@media (min-width: 900px) {
+  .intro-avatar {
+    width: 800px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .intro-avatar {
+    width: 100%;
+  }
+}
+
+/* Rules text */
+.intro-rules {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  text-align: center;
+  max-width: 520px;
+  color: #f5f5f5;
+  font-size: 0.9rem;
+}
+
+/* Room Controls */
+#roomControls {
+  background: rgba(20, 20, 24, 0.95);
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+#roomControls input {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #333;
+  font-size: 0.85rem;
+  background: #141419;
+  color: #fff;
+}
+
+#roomControls button {
+  background: linear-gradient(135deg, #00e5ff, #7c4dff);
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  border-radius: 999px;
+  font-weight: bold;
+  transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
+  font-size: 0.9rem;
+}
+
+#roomControls button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 229, 255, 0.6);
+}
+
+/* Flying chip animation */
+.chip-fly {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff176 0%, #ffca28 40%, #ff9800 70%, #ff4081 100%);
+  box-shadow: 0 0 20px rgba(255,64,129,0.9), 0 0 40px rgba(255,64,129,0.6);
+  z-index: 9999;
+  pointer-events: none;
+  transition: top 0.45s cubic-bezier(0.25, 1.25, 0.5, 1),
+              left 0.45s cubic-bezier(0.25, 1.25, 0.5, 1),
+              transform 0.45s ease-out,
+              opacity 0.25s ease-out;
+}
+
+.chip-fly::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255,64,129,0.4);
+  filter: blur(12px);
+  opacity: 0.7;
+}
+
+/* ============================================================
+   MODAL (Game Over)
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal {
+  background: #1e1e1e;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(255,64,129,0.8);
+  text-align: center;
+}
+
+.modal h2 {
+  margin-top: 0;
+}
+
+.modal button {
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #ff4081, #7c4dff);
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  main {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 100%;
+  }
+
+  #game {
+    order: 1;
+    padding: 0.75rem;
+  }
+
+  #rightColumn {
+    width: 100%;
+    order: 2;
+  }
+
+  #table {
+    max-width: none;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    grid-template-columns: 70px 1fr 70px;
+    grid-template-rows: 70px 1fr 70px;
+  }
+}
+
+@media (min-width: 1100px) {
+  #rollHistory {
+    height: 220px;
+    max-height: 220px;
+  }
+
+  #chat {
+    height: 220px;
+    max-height: 220px;
+  }
+}

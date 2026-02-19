@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>THOUSANAIRE: LEFT HUB RIGHT Wild</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Multiplayer dice board game - Left, Hub, Right, Wild!">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- INTRO OVERLAY (Create/Join Room) -->
+  <div id="introOverlay" class="intro-overlay">
+    <div class="intro-panel">
+      <div class="intro-avatar-wrapper">
+        <img src="assets/intro/host.png" class="intro-avatar" alt="Host avatar">
+      </div>
+
+      <div class="intro-rules">
+        <h2>🏆 Welcome to Thousanaire</h2>
+        <p><strong>Left, Hub, Right, Wild...</strong><br>Last player with chips wins!</p>
+      </div>
+
+      <div id="roomControls">
+        <button id="createRoomBtn" class="btn-primary">🎮 Create Room (Player 1)</button>
+        <input id="roomCodeInput" placeholder="Enter 6-letter code" maxlength="6" aria-label="Room code">
+        <button id="joinRoomBtn" class="btn-secondary">Join Room (Player 2-4)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOICEOVER -->
+  <audio id="introVoice" src="assets/audio/intro-voiceover.mp3" preload="auto"></audio>
+
+  <header>
+    <h1>Thousanaire: LEFT HUB RIGHT Wild</h1>
+    <div id="roomInfo" style="display: none;">
+      <strong>Room: <span id="roomCodeDisplay"></span></strong>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- JOIN GAME PANEL (Name/Avatar/Color) -->
+    <div id="joinGame" class="join-panel" style="display: none;">
+      <h3 id="joinTitle">Join as Player X</h3>
+      <input type="text" id="nameInput" placeholder="Enter your name" maxlength="12">
+      
+      <select id="avatarSelect">
+        <option value="assets/avatar/AvatarOne.png">👨‍💼 Suit Guy</option>
+        <option value="assets/avatar/AvatarTwo.png">👩‍🎨 Artist</option>
+        <option value="assets/avatar/Avatar3.png">🤖 Robot</option>
+        <option value="assets/avatar/AvatarFour.png">🧙‍♂️ Wizard</option>
+      </select>
+
+      <select id="colorSelect">
+        <option value="#ff4081">🌸 Pink</option>
+        <option value="#7c4dff">💜 Purple</option>
+        <option value="#00e5ff">🔷 Cyan</option>
+        <option value="#ffeb3b">⭐ Gold</option>
+      </select>
+
+      <button id="joinBtn" class="btn-success">✅ Join Game & Take Seat</button>
+    </div>
+
+    <!-- GAME BOARD -->
+    <section id="game" style="display: none;">
+      <h2>🎲 GAME BOARD</h2>
+
+      <div id="table">
+
+        <!-- Player 1 (Host) - TOP -->
+        <div class="player top" id="player0">
+          <img src="assets/avatar/AvatarOne.png" class="avatar" alt="Player 1">
+          <div class="name">Player 1</div>
+          <div class="chips">Chips: 0</div>
+        </div>
+
+        <!-- Player 2 - RIGHT -->
+        <div class="player right" id="player1">
+          <img src="assets/avatar/AvatarTwo.png" class="avatar" alt="Player 2">
+          <div class="name">Player 2</div>
+          <div class="chips">Chips: 0</div>
+        </div>
+
+        <!-- CENTER AREA -->
+        <div id="centerArea">
+          <div id="diceArea"></div>
+          <div id="centerPot">Hub Pot: 0</div>
+        </div>
+
+        <!-- Player 3 - BOTTOM -->
+        <div class="player bottom" id="player2">
+          <img src="assets/avatar/Avatar3.png" class="avatar" alt="Player 3">
+          <div class="name">Player 3</div>
+          <div class="chips">Chips: 0</div>
+        </div>
+
+        <!-- Player 4 - LEFT -->
+        <div class="player left" id="player3">
+          <img src="assets/avatar/AvatarFour.png" class="avatar" alt="Player 4">
+          <div class="name">Player 4</div>
+          <div class="chips">Chips: 0</div>
+        </div>
+
+      </div>
+
+      <!-- GAME CONTROLS -->
+      <div class="controls">
+        <button id="rollBtn" class="btn-primary" disabled>🎲 Roll Dice</button>
+        <button id="resetBtn" class="btn-secondary">🔄 Reset Game</button>
+      </div>
+
+      <!-- RESULTS & TURN INFO -->
+      <div id="results" class="results"></div>
+      <div id="currentTurn" class="turn-info">Current turn: Waiting for players...</div>
+      <div id="wildContent"></div>
+    </section>
+
+    <!-- RIGHT COLUMN -->
+    <section id="rightColumn" style="display: none;">
+
+      <section id="wildPanel">
+        <h3>🎲 Wild Choices</h3>
+        <div id="wildContent"></div>
+      </section>
+
+      <section id="history">
+        <h3>📜 Roll History</h3>
+        <div id="rollHistory"></div>
+      </section>
+
+      <section id="chat">
+        <h3>💬 Chat</h3>
+        <div id="chatMessages"></div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Say something..." maxlength="100">
+          <button id="sendBtn">Send</button>
+        </div>
+      </section>
+
+    </section>
+  </main>
+
+  <!-- GAME OVER MODAL -->
+  <div id="gameOverOverlay" class="modal-overlay hidden">
+    <div class="modal">
+      <h2 id="gameOverTitle">🏆 GAME OVER 🏆</h2>
+      <p id="gameOverText"></p>
+      <button id="playAgainBtn" class="btn-success">🔄 Play Again</button>
+    </div>
+  </div>
+
+  <!-- SOUND EFFECTS -->
+  <audio id="sndRoll" src="assets/sounds/roll.mp3" preload="auto"></audio>
+  <audio id="sndChip" src="assets/sounds/chip.mp3" preload="auto"></audio>
+  <audio id="sndWild" src="assets/sounds/wild.mp3" preload="auto"></audio>
+  <audio id="sndWin" src="assets/sounds/win.mp3" preload="auto"></audio>
+  <audio id="sndNope" src="assets/sounds/nope.mp3" preload="auto"></audio>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <!-- Load game.js BEFORE chat.js so chat can use game state -->
+  <script src="game.js"></script>
+  <script src="chat.js"></script>
+
+</body>
+</html>
