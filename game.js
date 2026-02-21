@@ -120,7 +120,7 @@ if (joinBtn) {
 
     socket.emit("joinSeat", {
       roomId,
-      name: name.substring(0, 12),  // Server also limits to 12
+      name: name.substring(0, 12),
       avatar,
       color
     });
@@ -165,7 +165,7 @@ let colors        = [null, null, null, null];
 let eliminated    = [false, false, false, false];
 let danger        = [false, false, false, false];
 let centerPot     = 0;
-let currentPlayer = null;  // 🎯 FIXED: Initialize as null
+let currentPlayer = null;
 let gameStarted   = false;
 
 const logicalPositions = ["top", "right", "bottom", "left"];
@@ -174,7 +174,7 @@ let domSeatForLogical  = [0, 1, 2, 3];
 let idleDiceInterval;
 
 /* ============================================================
-   SEAT MAPPING - Player 1(top), 2(right), 3(bottom), 4(left)
+   SEAT MAPPING
    ============================================================ */
 
 function initSeatMapping() {
@@ -189,25 +189,15 @@ function initSeatMapping() {
 }
 
 /* ============================================================
-   🎯 ROLL BUTTON STATE - FIXED LOGIC
+   ROLL BUTTON STATE
    ============================================================ */
 
 function updateRollButtonState() {
   const rollBtn = document.getElementById("rollBtn");
   if (!rollBtn) return;
   
-  // 🎯 PERFECT LOGIC: Enable ONLY when game started + my turn + not eliminated
   const isMyTurn = mySeat !== null && mySeat === currentPlayer;
   rollBtn.disabled = !gameStarted || !isMyTurn || eliminated[mySeat || 0];
-  
-  console.log("🎲 Roll state:", {
-    disabled: rollBtn.disabled,
-    gameStarted,
-    mySeat,
-    currentPlayer,
-    isMyTurn,
-    eliminatedMySeat: eliminated[mySeat || 0]
-  });
 }
 
 /* ============================================================
@@ -222,7 +212,7 @@ function playSound(id) {
 }
 
 /* ============================================================
-   ROLL / RESET / PLAY AGAIN BUTTONS
+   ROLL / RESET / PLAY AGAIN
    ============================================================ */
 
 const rollBtn = document.getElementById("rollBtn");
@@ -237,16 +227,14 @@ if (rollBtn) {
       return;
     }
     if (mySeat !== currentPlayer) {
-      console.log("❌ Not your turn! Current:", currentPlayer, "Your seat:", mySeat);
       playSound("sndNope");
       return;
     }
     socket.emit("rollDice", { roomId });
     playSound("sndRoll");
-    rollBtn.disabled = true;  // Prevent double-click
+    rollBtn.disabled = true;
   });
 }
-
 if (resetBtn) {
   resetBtn.addEventListener("click", () => {
     if (!roomId) return;
@@ -426,6 +414,7 @@ socket.on("resetGame", () => {
 /* ============================================================
    [Keep all your existing functions unchanged - they're perfect]
    ============================================================ */
+
 function updateTable() {
   for (let logicalSeat = 0; logicalSeat < 4; logicalSeat++) {
     const domIndex  = domSeatForLogical[logicalSeat];
@@ -525,7 +514,6 @@ function animateDice(outcomes) {
     }, 600);
   });
 }
-
 function addHistory(playerName, outcomesText) {
   const historyDiv = document.getElementById("rollHistory");
   if (!historyDiv) return;
@@ -553,6 +541,10 @@ function showRandomDice() {
   diceArea.innerHTML = renderDice(randomOutcomes);
 }
 
+/* ============================================================
+   ⭐ UPDATED WILD LOGIC — INSTANT ACTIONS, NO CONFIRM BUTTON
+   ============================================================ */
+
 function openWildChoicePanelServerDriven(playerIndex, outcomes) {
   const wildContent = document.getElementById("wildContent");
   const resultsEl   = document.getElementById("results");
@@ -563,34 +555,69 @@ function openWildChoicePanelServerDriven(playerIndex, outcomes) {
   rollBtn.disabled = true;
   resultsEl.innerText = `You rolled: ${outcomes.join(", ")}`;
 
-  const wildCount = outcomes.filter((o) => o === "Wild").length;
+  // Identify all Wild dice indices
+  const wildIndices = outcomes
+    .map((o, i) => (o === "Wild" ? i : null))
+    .filter((i) => i !== null);
+
+  const wildCount = wildIndices.length;
   if (wildCount === 0) {
     wildContent.innerHTML = "";
     rollBtn.disabled = false;
     return;
   }
 
+  // Track which Wilds have been used
+  const usedWilds = new Set();
+
+  function getNextWildIndex() {
+    for (const wi of wildIndices) {
+      if (!usedWilds.has(wi)) return wi;
+    }
+    return null;
+  }
+
+  function markWildUsed(wi) {
+    usedWilds.add(wi);
+
+    // If all Wilds used → close panel immediately
+    if (usedWilds.size >= wildCount) {
+      wildContent.innerHTML = "";
+      rollBtn.disabled = false;
+    }
+  }
+
+  // Build UI
   wildContent.innerHTML = `
     <h3>🎲 Wild Choices (${wildCount} Wild${wildCount > 1 ? 's' : ''})</h3>
-    <p>Choose actions for your Wild dice, then confirm.</p>
+    <p>Choose actions — each action executes instantly.</p>
   `;
 
-  const actions = [];
-
+  // CANCEL BUTTONS
   ["Left", "Right", "Hub"].forEach(direction => {
     if (outcomes.includes(direction)) {
       const btn = document.createElement("button");
       btn.textContent = `❌ Cancel ${direction}`;
       btn.onclick = () => {
-        actions.push({ type: "cancel", target: direction });
+        const wi = getNextWildIndex();
+        if (wi === null) return;
+
+        socket.emit("resolveWilds", {
+          roomId,
+          actions: [{ type: "cancel", target: direction, wildIndex: wi }]
+        });
+
         btn.disabled = true;
         btn.textContent = `✅ ${direction} Canceled`;
         btn.style.background = "#4CAF50";
+
+        markWildUsed(wi);
       };
       wildContent.appendChild(btn);
     }
   });
 
+  // STEAL BUTTONS
   const opponents = players
     .map((p, i) => ({ name: p, index: i }))
     .filter((o) => o.index !== playerIndex && o.name && !eliminated[o.index]);
@@ -599,26 +626,27 @@ function openWildChoicePanelServerDriven(playerIndex, outcomes) {
     const btn = document.createElement("button");
     btn.textContent = `💰 Steal from ${op.name}`;
     btn.onclick = () => {
-      actions.push({ type: "steal", from: op.index });
+      const wi = getNextWildIndex();
+      if (wi === null) return;
+
+      socket.emit("resolveWilds", {
+        roomId,
+        actions: [{ type: "steal", from: op.index, wildIndex: wi }]
+      });
+
       btn.disabled = true;
       btn.textContent = `✅ Stole from ${op.name}`;
       btn.style.background = "#4CAF50";
+
+      markWildUsed(wi);
     };
     wildContent.appendChild(btn);
   });
-
-  const confirmBtn = document.createElement("button");
-  confirmBtn.textContent = "✅ Confirm Choices";
-  confirmBtn.style.marginTop = "15px";
-  confirmBtn.style.background = "#4CAF50";
-  confirmBtn.style.color = "white";
-  confirmBtn.onclick = () => {
-    socket.emit("resolveWilds", { roomId, actions });
-    wildContent.innerHTML = "";
-    rollBtn.disabled = false;
-  };
-  wildContent.appendChild(confirmBtn);
 }
+
+/* ============================================================
+   TRIPLE WILD PANEL (UNCHANGED)
+   ============================================================ */
 
 function openTripleWildChoicePanelServerDriven(playerIndex) {
   const wildContent = document.getElementById("wildContent");
@@ -651,6 +679,10 @@ function openTripleWildChoicePanelServerDriven(playerIndex) {
     rollBtn.disabled = false;
   };
 }
+
+/* ============================================================
+   CHIP ANIMATION (UNCHANGED)
+   ============================================================ */
 
 function getSeatCenter(logicalSeat) {
   const domIndex = domSeatForLogical[logicalSeat];
@@ -713,7 +745,7 @@ function animateChipTransfer(fromSeat, toSeat, type) {
 }
 
 /* ============================================================
-   INITIALIZATION
+   INITIALIZATION (UNCHANGED)
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
