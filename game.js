@@ -604,6 +604,7 @@ function openWildChoicePanelServerDriven(playerIndex, outcomes) {
 
         socket.emit("resolveWilds", {
           roomId,
+          seat: playerIndex,  // 🔥 PATCH: include acting seat
           actions: [{ type: "cancel", target: direction, wildIndex: wi }]
         });
 
@@ -631,6 +632,7 @@ function openWildChoicePanelServerDriven(playerIndex, outcomes) {
 
       socket.emit("resolveWilds", {
         roomId,
+        seat: playerIndex,  // 🔥 PATCH: include acting seat
         actions: [{ type: "steal", from: op.index, wildIndex: wi }]
       });
 
@@ -645,7 +647,7 @@ function openWildChoicePanelServerDriven(playerIndex, outcomes) {
 }
 
 /* ============================================================
-   TRIPLE WILD PANEL (UNCHANGED)
+   TRIPLE WILD PANEL (UNCHANGED EXCEPT FOR SEAT PATCH)
    ============================================================ */
 
 function openTripleWildChoicePanelServerDriven(playerIndex) {
@@ -668,13 +670,21 @@ function openTripleWildChoicePanelServerDriven(playerIndex) {
   `;
 
   document.getElementById("takePotBtn").onclick = () => {
-    socket.emit("tripleWildChoice", { roomId, choice: { type: "takePot" } });
+    socket.emit("tripleWildChoice", {
+      roomId,
+      seat: playerIndex,          // 🔥 PATCH: include acting seat
+      choice: { type: "takePot" }
+    });
     wildContent.innerHTML = "";
     rollBtn.disabled = false;
   };
 
   document.getElementById("steal3Btn").onclick = () => {
-    socket.emit("tripleWildChoice", { roomId, choice: { type: "steal3" } });
+    socket.emit("tripleWildChoice", {
+      roomId,
+      seat: playerIndex,          // 🔥 PATCH: include acting seat
+      choice: { type: "steal3" }
+    });
     wildContent.innerHTML = "";
     rollBtn.disabled = false;
   };
