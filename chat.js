@@ -10,7 +10,7 @@ const sendBtn = document.getElementById("sendBtn");
    UNLOCK SPEECH SYNTHESIS (Required on Chrome/iOS/Android)
    ============================================================ */
 document.addEventListener("click", () => {
-  speechSynthesis.speak(new SpeechSynthesisUtterance("")); 
+  speechSynthesis.speak(new SpeechSynthesisUtterance(""));
 }, { once: true });
 
 // Send on button click OR Enter key
