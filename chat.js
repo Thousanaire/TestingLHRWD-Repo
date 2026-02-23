@@ -1,5 +1,5 @@
 /* ============================================================
-   MULTIPLAYER CHAT - FULLY UPDATED WITH PLAYER NAMES + TTS FIX
+   MULTIPLAYER CHAT - PLAYER NAMES + TTS (SPEAKS REAL NAMES)
    ============================================================ */
 
 const chatDiv = document.getElementById("chatMessages");
@@ -10,8 +10,7 @@ const sendBtn = document.getElementById("sendBtn");
    UNLOCK SPEECH SYNTHESIS (Required on Chrome/iOS/Android)
    ============================================================ */
 document.addEventListener("click", () => {
-  // Empty utterance unlocks TTS autoplay
-  speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+  speechSynthesis.speak(new SpeechSynthesisUtterance("")); 
 }, { once: true });
 
 // Send on button click OR Enter key
@@ -79,8 +78,9 @@ addMessage = ((originalAddMessage) => {
   return function(name, text) {
     originalAddMessage(name, text);
 
-    // 🔊 Speak message out loud
-    const utterance = new SpeechSynthesisUtterance(`${name} says ${text}`);
+    // 🔊 Speak message out loud using REAL player name
+    const spoken = `${name} said ${text}`;
+    const utterance = new SpeechSynthesisUtterance(spoken);
     speechSynthesis.speak(utterance);
 
     limitChatHistory();
