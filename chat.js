@@ -1,10 +1,18 @@
 /* ============================================================
-   MULTIPLAYER CHAT - FULLY UPDATED WITH PLAYER NAMES
+   MULTIPLAYER CHAT - FULLY UPDATED WITH PLAYER NAMES + TTS FIX
    ============================================================ */
 
 const chatDiv = document.getElementById("chatMessages");
 const input = document.getElementById("chatInput");
 const sendBtn = document.getElementById("sendBtn");
+
+/* ============================================================
+   UNLOCK SPEECH SYNTHESIS (Required on Chrome/iOS/Android)
+   ============================================================ */
+document.addEventListener("click", () => {
+  // Empty utterance unlocks TTS autoplay
+  speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+}, { once: true });
 
 // Send on button click OR Enter key
 sendBtn.addEventListener("click", sendChatMessage);
@@ -55,10 +63,6 @@ function addMessage(name, text) {
   
   // Scroll to bottom
   chatDiv.scrollTop = chatDiv.scrollHeight;
-  
-  // Optional: TTS (commented out - uncomment if desired)
-  // let utterance = new SpeechSynthesisUtterance(`${name}: ${text}`);
-  // speechSynthesis.speak(utterance);
 }
 
 // Limit chat height and keep only last 50 messages
@@ -68,10 +72,17 @@ function limitChatHistory() {
   }
 }
 
-// Call after each message
+/* ============================================================
+   WRAP addMessage TO INCLUDE TTS + HISTORY LIMIT
+   ============================================================ */
 addMessage = ((originalAddMessage) => {
   return function(name, text) {
     originalAddMessage(name, text);
+
+    // 🔊 Speak message out loud
+    const utterance = new SpeechSynthesisUtterance(`${name} says ${text}`);
+    speechSynthesis.speak(utterance);
+
     limitChatHistory();
   };
 })(addMessage);
